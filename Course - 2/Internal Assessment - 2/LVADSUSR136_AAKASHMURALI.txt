@@ -1,0 +1,102 @@
+Aakash Murali 4344
+--------------------
+LAB - 1
+
+1)select monthname(maintenance_date) as monthname,maintenance_date, machine_id as "machinesgreaterthanAVG" 
+  from l1_maintenance_records where
+  cost>
+  (select avg(cost) from l1_maintenance_records)
+  group by maintenance_date,machine_id;
+
+
+2)select maintenance_type,count(maintenance_id) as count from l1_maintenance_records where
+  month(maintenance_date)=3 and year(maintenance_date) =2024
+  group by maintenance_type
+  order by count desc
+  limit 1;
+
+
+3)(to find highest work did in march 2024) -
+  
+  select technician_name , count(maintenance_id) as count from l1_maintenance_records
+  where month(maintenance_date)=3 and year(maintenance_date)=2024
+  group by technician_name
+  order by count desc;
+
+  (highest avg cost per task in march 2024) - 
+  
+  select technician_name , avg(cost) as avg_cost from l1_maintenance_records
+  where month(maintenance_date)=3 and year(maintenance_date)=2024
+  group by technician_name
+  order by avg_cost desc
+  limit 1;
+
+------------------------------------------------------------------------------------------------
+
+LAB - 2
+
+
+4)select product_id,avg(incident_count_pre_update-incident_count_post_update) as avg_reduction
+  from l2_updates
+  group by product_id;
+
+
+5)select update_id,user_feedback_score from l2_updates where
+  user_feedback_score = (select max(user_feedback_score) from l2_updates);
+
+
+6)select product_id as "productwithLeastImprovement",avg(incident_count_pre_update-incident_count_post_update) as avg_reduction
+  from l2_updates
+  group by product_id
+  order by avg_reduction asc limit 1;
+
+------------------------------------------------------------------------------------------------
+
+LAB - 3
+
+
+7)select patient_name,count(facility_id) as facilitites_visited from
+  l3_patients join l3_visits using (patient_id)
+  where month(visit_date)=3 and year(visit_date)=2024
+  group by patient_name
+  having count(facility_id)>1;
+
+8)select facility_name,count(facility_id) as "emergency_visits" from 
+  l3_facilities f join l3_visits v using (facility_id)
+  where reason_for_visit="emergency" and month(visit_date)=3 and year(visit_date)=2024
+  group by facility_name
+  order by emergency_visits desc limit 1;
+
+
+9)select insurance_provider,count(treatment_id) as "complicated_cases" from 
+  l3_patients p join l3_visits v using (patient_id) join l3_treatments t using (visit_id)
+  where outcome="complicated" and year(visit_date)=2024 and month(visit_date) in (1,2,3,4)
+  group by insurance_provider
+  order by complicated_cases desc limit 1;
+
+------------------------------------------------------------------------------------------------
+
+LAB - 4
+
+
+10)select coalesce(category,"TOTAL") as category,
+   coalesce(product_name,"TOTAL") as product ,
+   sum(s.quantity) as "total_sold" from 
+   l4_products p join l4_sales s using (product_id) join l4_stores st using(store_id)
+   where month(sale_date)=3 and year(sale_date)=2024
+   group by category,product_name
+   with rollup ;
+
+11)select region,total_sales from
+   l4_products p join l4_sales s using (product_id) 
+   join l4_stores st using(store_id)
+   join sales using(region)
+   where month(sale_date) in (1,2,3,4) and year (sale_date)=2024
+   group by region,total_sales
+   order by total_sales desc limit 1; 
+
+12)select product_name,count(sale_id) as count from 
+   l4_sales s cross join l4_products p 
+   where month(sale_date)=3 and year(sale_date)=2024
+   group by product_name
+   having count<1;
