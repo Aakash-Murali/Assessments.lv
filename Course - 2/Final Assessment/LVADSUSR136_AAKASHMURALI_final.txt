@@ -1,0 +1,147 @@
+Aakash Murali 4344
+---------------------------
+LAB SECTION - 1
+
+1)#there is no sales in past 30 days from today 15th-april
+
+  select product_name,avg(sales_amount) as average from 
+  products p join sales_records s using (product_id)
+  where datediff(current_date(),sales_date)<=30
+  group by product_name;
+
+
+2)select product_name , sum(sales_amount) as total_sales , rank() over (order by sum(sales_amount) desc) as Ranking
+  from products p join sales_records s using (product_id)
+  where year(sales_date)=year(current_date())
+  group by product_name
+  limit 3;
+
+
+3)select 
+  customer_name, concat(round(sum(sales_amount)/(select sum(sales_amount) from sales_records)*100),'%') as percent_contribution, 
+  rank() over(order by sum(sales_amount) desc) as Ranking from 
+  customers c join sales_records s using (customer_id)
+  group by customer_name;
+
+
+4)select month(sales_date) as month,customer_name, count(customer_id) as orders
+  from sales_records s left join customers c using (customer_id)
+  where customer_name is not null
+  group by month,customer_name;
+
+--------------------------------------------------------------------------------------------------
+LAB SECTION - 2
+
+5)select flight_id,departure_airport,arrival_airport ,avg(ticket_price) as average_price 
+  from flights f join tickets t using (flight_id)
+  group by flight_id, departure_airport , arrival_airport ;
+
+6)select flight_number , departure_date , count(passenger_id) as tickets_sold from
+  passengers p join tickets t using (passenger_id) join flights f using (flight_id)
+  where month(ticket_date) = month(current_date())-1
+  group by flight_number,departure_date
+  order by tickets_sold desc;
+
+7)select passenger_name , sum(ticket_price) as total_spent , frequent_flyer_status
+  from passengers p join tickets t using (passenger_id) 
+  group by passenger_name, frequent_flyer_status
+  order by total_spent desc
+  limit 5;
+
+
+8)select monthname(ticket_date) as month , count(ticket_id) as tickets_sold 
+  from tickets 
+  group by month
+  order by month desc limit 1;
+
+--------------------------------------------------------------------------------------------------
+LAB SECTION - 3
+
+
+9)select player_name ,game_genre, datediff(play_date,registration_date)
+  from players p join playerscores ps using(player_id) join games g using (game_id);
+
+
+
+10)select game_name as popular_games, count(player_id) as player_count
+   from players p join playerscores ps using(player_id) join games g using (game_id)
+   group by game_name
+   order by player_count desc
+   limit 3;
+
+
+11)select game_name,max(score)as max_score,avg(score) as avg_score,count(player_id) as player_count
+   from players p join playerscores ps using(player_id) join games g using (game_id)
+   group by game_name;
+
+
+12)select player_id, registration_date , play_date
+   from players p join playerscores ps using(player_id) join games g using (game_id)
+   where datediff(current_date(),play_date)>30 and exists(select play_date from playerscores
+   where playerscores.player_id = p.player_id)
+   group by player_id,registration_date,play_date;
+
+--------------------------------------------------------------------------------------------------
+
+LAB SECTION - 4
+
+
+13)select doctor_name, sum(cost) as treatment_cost from
+   treatments t join doctors d using (doctor_id)
+   group by doctor_name
+   order by treatment_cost desc
+   limit 5;
+
+
+14) #here,I considered bill_amount-cost = revenue
+
+   select coalesce(treatment_name,"Total") as treatments , sum( bill_amount-cost ) as revenue , 
+   sum( bill_amount-cost )/ (select sum(bill_amount-cost) from patients join treatments using (patient_id))*100 as 'revenue%'
+   from patients p join treatments t using (patient_id)
+   group by treatment_name with rollup
+   order by 'revenue%' desc;
+
+
+15)select patient_id , patient_name , admission_date , discharge_date , datediff(admission_date,discharge_date) as days_since_discharged
+   from patients p join treatments t using (patient_id)
+   where datediff(admission_date,discharge_date)<=30 and datediff(admission_date,discharge_date) >0
+   order by days_since_discharged asc;
+
+
+16)select gender ,round(avg(datediff(discharge_date,admission_date))) as avg_LOS
+   from patients p join treatments t using (patient_id)
+   group by gender;
+   select diagnosis ,round(avg(datediff(discharge_date,admission_date))) as avg_LOS
+   from patients p join treatments t using (patient_id)
+   group by diagnosis;
+
+--------------------------------------------------------------------------------------------------
+LAB SECTION - 5
+
+
+17)select department , semester , avg(grade) as avg_grade
+   from enrollments e join students s using (student_id) join courses c using (course_id)
+   group by department, semester
+   order by department,semester;
+
+18)select major, count(student_id) as enrolled,enrollment_year
+   from enrollments e join students s using (student_id) join courses c using (course_id)
+   group by major,enrollment_year
+   order by enrolled desc;
+  
+19)select student_id,student_name , semester , sum(credits) as Total_credits_earned
+   from enrollments e join students s using (student_id) join courses c using (course_id)
+   group by student_id , student_name , semester
+   having total_credits_earned >=50
+   order by total_credits_earned;
+
+20)select 2019 as 'year' ,course_name , count(student_id) as enrolled
+   from enrollments e join students s using (student_id) join courses c using (course_id) 
+   where enrollment_year=2019
+   group by course_name
+   order by enrolled desc limit 1 ;
+   select "2020" as year,course_name , count(student_id) as enrolled
+   from enrollments e join students s using (student_id) join courses c using (course_id) 
+   where enrollment_year=2020
+   group by course_name
+   order by enrolled desc limit 1 ;
